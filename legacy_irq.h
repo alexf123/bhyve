@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012 NetApp, Inc.
+ * Copyright (c) 2013 Neel Natu <neel@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,13 +26,16 @@
  * $FreeBSD$
  */
 
-#ifndef _IOAPIC_H_
-#define	_IOAPIC_H_
+#ifndef _LEGACY_IRQ_H_
+#define	_LEGACY_IRQ_H_
 
-struct vmctx;
-
-void	ioapic_init(int num);
-void	ioapic_deassert_pin(struct vmctx *ctx, int pin);
-void	ioapic_assert_pin(struct vmctx *ctx, int pin);
+/*
+ * Allocate a legacy irq. The argument 'irq' can be set to -1 to allocate any
+ * available irq.
+ *
+ * Returns -1 on failure or the allocated irq number on success.
+ */
+int	legacy_irq_alloc(int irq);
+void	legacy_irq_init(void);
 
 #endif

@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012 NetApp, Inc.
+ * Copyright (c) 2013 Neel Natu <neel@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,9 @@
  * $FreeBSD$
  */
 
-#ifndef _ACPI_H_
-#define _ACPI_H_
+#ifndef _LPC_H_
+#define	_LPC_H_
 
-int	acpi_build(struct vmctx *ctx, int ncpu);
+int	lpc_device_parse(const char *opt);
 
-#endif /* _ACPI_H_ */
+#endif

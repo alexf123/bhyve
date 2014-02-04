@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2012 NetApp, Inc.
+ * Copyright (c) 2013 Neel Natu <neel@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,9 +26,20 @@
  * $FreeBSD$
  */
 
-#ifndef _ACPI_H_
-#define _ACPI_H_
+#ifndef _UART_EMUL_H_
+#define	_UART_EMUL_H_
 
-int	acpi_build(struct vmctx *ctx, int ncpu);
 
-#endif /* _ACPI_H_ */
+#define	UART_IO_BAR_SIZE	8
+
+struct uart_softc;
+
+typedef void (*uart_intr_func_t)(void *arg);
+struct uart_softc *uart_init(uart_intr_func_t intr_assert,
+		uart_intr_func_t intr_deassert, void *arg);
+
+int	uart_legacy_alloc(int unit, int *ioaddr, int *irq);
+uint8_t	uart_read(struct uart_softc *sc, int offset);
+void	uart_write(struct uart_softc *sc, int offset, uint8_t value);
+int	uart_set_backend(struct uart_softc *sc, const char *opt);
+#endif
