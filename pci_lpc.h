@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011 NetApp, Inc.
+ * Copyright (c) 2013 Neel Natu <neel@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,20 +26,45 @@
  * $FreeBSD$
  */
 
-#ifndef _PIT_8254_H_
-#define	_PIT_8254_H_
+#ifndef _LPC_H_
+#define	_LPC_H_
 
-/*
- * Borrowed from amd64/include/timerreg.h because in that file it is
- * conditionally compiled for #ifdef _KERNEL only.
- */
+#include <sys/linker_set.h>
 
-#include <dev/ic/i8253reg.h>
+typedef void (*lpc_write_dsdt_t)(void);
 
-#define	IO_TIMER1	0x40		/* 8253 Timer #1 */
-#define	TIMER_CNTR0	(IO_TIMER1 + TIMER_REG_CNTR0)
-#define	TIMER_CNTR1	(IO_TIMER1 + TIMER_REG_CNTR1)
-#define	TIMER_CNTR2	(IO_TIMER1 + TIMER_REG_CNTR2)
-#define	TIMER_MODE	(IO_TIMER1 + TIMER_REG_MODE)
+struct lpc_dsdt {
+	lpc_write_dsdt_t handler;
+};
 
-#endif	/* _PIT_8254_H_ */
+#define	LPC_DSDT(handler)						\
+	static struct lpc_dsdt __CONCAT(__lpc_dsdt, __LINE__) = {	\
+		(handler),						\
+	};								\
+	DATA_SET(lpc_dsdt_set, __CONCAT(__lpc_dsdt, __LINE__))
+
+enum lpc_sysres_type {
+	LPC_SYSRES_IO,
+	LPC_SYSRES_MEM
+};
+
+struct lpc_sysres {
+	enum lpc_sysres_type type;
+	uint32_t base;
+	uint32_t length;
+};
+
+#define	LPC_SYSRES(type, base, length)					\
+	static struct lpc_sysres __CONCAT(__lpc_sysres, __LINE__) = {	\
+		(type),							\
+		(base),							\
+		(length)						\
+	};								\
+	DATA_SET(lpc_sysres_set, __CONCAT(__lpc_sysres, __LINE__))
+
+#define	SYSRES_IO(base, length)		LPC_SYSRES(LPC_SYSRES_IO, base, length)
+#define	SYSRES_MEM(base, length)	LPC_SYSRES(LPC_SYSRES_MEM, base, length)
+
+int	lpc_device_parse(const char *opt);
+
+#endif

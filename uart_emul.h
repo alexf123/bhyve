@@ -1,5 +1,5 @@
 /*-
- * Copyright (c) 2011 NetApp, Inc.
+ * Copyright (c) 2013 Neel Natu <neel@freebsd.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -26,42 +26,20 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#ifndef _UART_EMUL_H_
+#define	_UART_EMUL_H_
 
-#include <sys/param.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#define	UART_IO_BAR_SIZE	8
 
-#include "inout.h"
+struct uart_softc;
 
-#define	IO_ICU1		0x20
-#define	IO_ICU2		0xA0
-#define	ICU_IMR_OFFSET	1
+typedef void (*uart_intr_func_t)(void *arg);
+struct uart_softc *uart_init(uart_intr_func_t intr_assert,
+		uart_intr_func_t intr_deassert, void *arg);
 
-static int
-atpic_handler(struct vmctx *ctx, int vcpu, int in, int port, int bytes,
-	      uint32_t *eax, void *arg)
-{
-	if (bytes != 1)
-		return (-1);
-
-	if (in) {
-		if (port & ICU_IMR_OFFSET) {
-			/* all interrupts masked */
-			*eax = 0xff;
-		} else {
-			*eax = 0x00;
-		}
-	}
-
-	/* Pretend all writes to the 8259 are alright */
-	return (0);
-}
-
-INOUT_PORT(atpic, IO_ICU1, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU1 + ICU_IMR_OFFSET, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU2, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU2 + ICU_IMR_OFFSET, IOPORT_F_INOUT, atpic_handler);
+int	uart_legacy_alloc(int unit, int *ioaddr, int *irq);
+uint8_t	uart_read(struct uart_softc *sc, int offset);
+void	uart_write(struct uart_softc *sc, int offset, uint8_t value);
+int	uart_set_backend(struct uart_softc *sc, const char *opt);
+#endif
