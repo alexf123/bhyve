@@ -1,5 +1,6 @@
 /*-
- * Copyright (c) 2011 NetApp, Inc.
+ * Copyright (c) 2014 Advanced Computing Technologies LLC
+ * Written by: John H. Baldwin <jhb@FreeBSD.org>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -11,10 +12,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY NETAPP, INC ``AS IS'' AND
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL NETAPP, INC OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -26,42 +27,13 @@
  * $FreeBSD$
  */
 
-#include <sys/cdefs.h>
-__FBSDID("$FreeBSD$");
+#ifndef _IOAPIC_H_
+#define	_IOAPIC_H_
 
-#include <sys/param.h>
+/*
+ * Allocate a PCI IRQ from the I/O APIC.
+ */
+void	ioapic_init(struct vmctx *ctx);
+int	ioapic_pci_alloc_irq(void);
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
-#include "inout.h"
-
-#define	IO_ICU1		0x20
-#define	IO_ICU2		0xA0
-#define	ICU_IMR_OFFSET	1
-
-static int
-atpic_handler(struct vmctx *ctx, int vcpu, int in, int port, int bytes,
-	      uint32_t *eax, void *arg)
-{
-	if (bytes != 1)
-		return (-1);
-
-	if (in) {
-		if (port & ICU_IMR_OFFSET) {
-			/* all interrupts masked */
-			*eax = 0xff;
-		} else {
-			*eax = 0x00;
-		}
-	}
-
-	/* Pretend all writes to the 8259 are alright */
-	return (0);
-}
-
-INOUT_PORT(atpic, IO_ICU1, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU1 + ICU_IMR_OFFSET, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU2, IOPORT_F_INOUT, atpic_handler);
-INOUT_PORT(atpic, IO_ICU2 + ICU_IMR_OFFSET, IOPORT_F_INOUT, atpic_handler);
+#endif
